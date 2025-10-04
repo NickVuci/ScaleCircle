@@ -135,9 +135,11 @@ function draw() {
   
   // Parse period
   const periodCents = parsePeriodToCents(periodInput.value);
-  periodInfo.textContent = isFinite(periodCents) 
-    ? `Period: ${periodCents.toFixed(3)}¢` 
-    : 'Period: —';
+  if (periodInfo) {
+    periodInfo.textContent = isFinite(periodCents) 
+      ? `Period: ${periodCents.toFixed(3)}¢` 
+      : 'Period: —';
+  }
   
   if (!isFinite(periodCents) || periodCents === 0) return;
   

@@ -3,21 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cent → Degree Pitch-Class Circle</title>
+  <title>Scale Circle Image Generator</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>
-    <h1>Cent → Degree Pitch-Class Circle</h1>
-    <p>Enter intervals (one per line) as cents (e.g. <code>700</code> or <code>700c</code>) or ratios (e.g. <code>3/2</code> or <code>1.5</code>). Period may be in cents (e.g. <code>1200</code>) or ratio (e.g. <code>2/1</code>).</p>
+    <h1>Scale Circle Image Generator</h1>
   </header>
 
   <div class="wrap">
     <!-- Controls -->
     <section class="panel">
-      <h2>Inputs</h2>
+      <h2>Scale Data</h2>
       <div class="content">
-        <label>Period (cents or ratio)</label>
+        <label>Period</label>
         <input id="periodInput" type="text" placeholder="1200 or 2/1 or 1901.955" value="2/1" />
 
         <label>Intervals (one per line)</label>
@@ -58,9 +57,7 @@
             <button id="exportPngBtn" class="btn" type="button">Export PNG</button>
             <button id="exportJpgBtn" class="btn" type="button">Export JPG</button>
           </div>
-          <span id="periodInfo" class="pill" title="Computed period in cents" style="margin-top:8px;"></span>
         </div>
-        <div class="footnote">Formula: <code>θ = (interval_cents / period_cents) × 360 mod 360</code></div>
       </div>
     </section>
 
@@ -69,11 +66,6 @@
       <h2>Diagram</h2>
       <div class="svg-wrap">
         <svg id="svg" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" aria-label="Pitch-class circle diagram"></svg>
-      </div>
-      <div class="legend">
-        <span class="dot"></span> Points
-        <span class="ray"></span> Rays
-        <span style="margin-left:auto;">Angular position: <code>degrees = (cents / period) × 360</code></span>
       </div>
     </section>
   </div>
