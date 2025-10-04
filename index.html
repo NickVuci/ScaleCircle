@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cent → Degree Pitch-Class Circle</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Cent → Degree Pitch-Class Circle</h1>
+    <p>Enter intervals (one per line) as cents (e.g. <code>700</code> or <code>700c</code>) or ratios (e.g. <code>3/2</code> or <code>1.5</code>). Period may be in cents (e.g. <code>1200</code>) or ratio (e.g. <code>2/1</code>).</p>
+  </header>
+
+  <div class="wrap">
+    <!-- Controls -->
+    <section class="panel">
+      <h2>Inputs</h2>
+      <div class="content">
+        <label>Period (cents or ratio)</label>
+        <input id="periodInput" type="text" placeholder="1200 or 2/1 or 1901.955" value="2/1" />
+
+        <label>Intervals (one per line)</label>
+        <textarea id="intervals" spellcheck="false" placeholder="# Examples:
+200
+700
+3/2
+5/4
+386.314c
+# Comments start with #
+">9/8
+5/4
+4/3
+3/2
+5/3
+15/8</textarea>
+
+        <div class="toggles">
+          <label><input id="showCircle" type="checkbox" checked /> Show circle guide</label>
+          <label><input id="showRays" type="checkbox" checked /> Show radial lines</label>
+          <label><input id="showLabels" type="checkbox" checked /> Show labels</label>
+        </div>
+
+        <div class="size-controls" style="margin-top:12px;">
+          <label>Circle size</label>
+          <input id="circleSize" type="range" min="0.2" max="1.0" step="0.1" value="0.6" />
+          <label>Label size</label>
+          <input id="labelSize" type="range" min="8" max="20" step="1" value="12" />
+        </div>
+
+        <div class="export-controls" style="margin-top:12px;">
+          <label>Export filename</label>
+          <input id="exportFilename" type="text" placeholder="pitch-class-circle" value="pitch-class-circle" />
+          <div style="display:flex; gap:8px; flex-wrap: wrap; margin-top:8px;">
+            <button id="exportSvgBtn" class="btn" type="button">Export SVG</button>
+            <button id="exportPngBtn" class="btn" type="button">Export PNG</button>
+            <button id="exportJpgBtn" class="btn" type="button">Export JPG</button>
+          </div>
+          <span id="periodInfo" class="pill" title="Computed period in cents" style="margin-top:8px;"></span>
+        </div>
+        <div class="footnote">Formula: <code>θ = (interval_cents / period_cents) × 360 mod 360</code></div>
+      </div>
+    </section>
+
+    <!-- Drawing -->
+    <section class="panel canvas-panel">
+      <h2>Diagram</h2>
+      <div class="svg-wrap">
+        <svg id="svg" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" aria-label="Pitch-class circle diagram"></svg>
+      </div>
+      <div class="legend">
+        <span class="dot"></span> Points
+        <span class="ray"></span> Rays
+        <span style="margin-left:auto;">Angular position: <code>degrees = (cents / period) × 360</code></span>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="export.js"></script>
+</body>
+</html>
