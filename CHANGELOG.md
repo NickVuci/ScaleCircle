@@ -1,6 +1,24 @@
 # Changelog
 
-## Version 2.0 - Final Polish (Current)
+## Version 2.1 - UI Refinement (Current)
+
+### UI/UX Improvements
+- **Square Canvas**: Preview canvas is now square (1:1 aspect ratio) to match export output
+- **Three-Column Layout**: 
+  - Left: Scale data input (period and intervals)
+  - Center: Square preview canvas
+  - Right: Display controls (toggles and sliders)
+- **Export Controls in Header**: Moved export filename and format buttons to top-right of screen for quick access
+- **Improved Responsive Design**: Better mobile and tablet layouts with intelligent column stacking
+- **Cleaner Organization**: Related controls grouped together for better workflow
+
+### Visual Changes
+- Removed legend (no longer needed with cleaner layout)
+- Removed period info display pill
+- Better spacing and alignment throughout
+- Square canvas perfectly matches export dimensions
+
+## Version 2.0 - Final Polish
 
 ### Major Refactoring
 - **Created `utils.js`**: Centralized all shared utilities and constants

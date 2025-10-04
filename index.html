@@ -8,12 +8,20 @@
 </head>
 <body>
   <header>
-    <h1>Scale Circle Image Generator</h1>
+    <div class="header-content">
+      <h1>Scale Circle Image Generator</h1>
+      <div class="export-controls-header">
+        <input id="exportFilename" type="text" placeholder="pitch-class-circle" value="pitch-class-circle" />
+        <button id="exportSvgBtn" class="btn" type="button">SVG</button>
+        <button id="exportPngBtn" class="btn" type="button">PNG</button>
+        <button id="exportJpgBtn" class="btn" type="button">JPG</button>
+      </div>
+    </div>
   </header>
 
   <div class="wrap">
-    <!-- Controls -->
-    <section class="panel">
+    <!-- Left: Scale Data -->
+    <section class="panel data-panel">
       <h2>Scale Data</h2>
       <div class="content">
         <label>Period</label>
@@ -33,14 +41,28 @@
 3/2
 5/3
 15/8</textarea>
+      </div>
+    </section>
 
+    <!-- Center: Square Canvas -->
+    <section class="panel canvas-panel">
+      <h2>Preview</h2>
+      <div class="svg-wrap">
+        <svg id="svg" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" aria-label="Pitch-class circle diagram"></svg>
+      </div>
+    </section>
+
+    <!-- Right: Display Controls -->
+    <section class="panel controls-panel">
+      <h2>Display</h2>
+      <div class="content">
         <div class="toggles">
           <label><input id="showCircle" type="checkbox" checked /> Show circle guide</label>
           <label><input id="showRays" type="checkbox" checked /> Show radial lines</label>
           <label><input id="showLabels" type="checkbox" checked /> Show labels</label>
         </div>
 
-        <div class="size-controls" style="margin-top:12px;">
+        <div class="size-controls">
           <label>Circle size</label>
           <input id="circleSize" type="range" min="0.2" max="1.0" step="0.1" value="0.6" />
           <label>Label size</label>
@@ -48,24 +70,6 @@
           <label>Label distance</label>
           <input id="labelDistance" type="range" min="0" max="80" step="1" value="35" />
         </div>
-
-        <div class="export-controls" style="margin-top:12px;">
-          <label>Export filename</label>
-          <input id="exportFilename" type="text" placeholder="pitch-class-circle" value="pitch-class-circle" />
-          <div style="display:flex; gap:8px; flex-wrap: wrap; margin-top:8px;">
-            <button id="exportSvgBtn" class="btn" type="button">Export SVG</button>
-            <button id="exportPngBtn" class="btn" type="button">Export PNG</button>
-            <button id="exportJpgBtn" class="btn" type="button">Export JPG</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Drawing -->
-    <section class="panel canvas-panel">
-      <h2>Diagram</h2>
-      <div class="svg-wrap">
-        <svg id="svg" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" aria-label="Pitch-class circle diagram"></svg>
       </div>
     </section>
   </div>
