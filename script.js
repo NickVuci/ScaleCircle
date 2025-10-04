@@ -7,6 +7,7 @@ const showRays = document.getElementById('showRays');
 const showLabels = document.getElementById('showLabels');
 const circleSize = document.getElementById('circleSize');
 const labelSize = document.getElementById('labelSize');
+const labelDistance = document.getElementById('labelDistance');
 const periodInfo = document.getElementById('periodInfo');
 
 // ---------- Math helpers ----------
@@ -185,17 +186,19 @@ function draw() {
 
     if (showLabels.checked) {
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      // Position labels on a larger concentric circle for better spacing
-      const labelCircleRadius = radius + 35; // Labels on an even larger circle than degree markers
+  // Position labels on a larger concentric circle for better spacing
+  const dist = parseFloat(labelDistance?.value || 35);
+  const labelCircleRadius = radius + dist; // Labels on an even larger circle than degree markers
       const rad = (d.deg - 90) * Math.PI / 180; // Same angle transformation as points
       const lx = cx + Math.cos(rad) * labelCircleRadius;
       const ly = cy + Math.sin(rad) * labelCircleRadius;
-      label.setAttribute('x', lx);
-      label.setAttribute('y', ly);
-      label.setAttribute('fill', 'black');
-      label.setAttribute('font-size', labelSize.value); // Use user-controlled label size
-      label.setAttribute('dominant-baseline', 'middle');
-      label.setAttribute('text-anchor', 'middle');
+  label.setAttribute('x', lx);
+  label.setAttribute('y', ly);
+  label.setAttribute('fill', 'black');
+  label.setAttribute('font-size', labelSize.value); // Use user-controlled label size
+  // Center the label on the label radius so its midpoint lies on the radial line
+  label.setAttribute('dominant-baseline', 'middle');
+  label.setAttribute('text-anchor', 'middle');
       // Show only the original interval value (cents or ratio)
       label.textContent = d.raw;
       g.appendChild(label);
@@ -205,7 +208,7 @@ function draw() {
 }
 
 // ---------- Event listeners ----------
-const inputs = [periodInput, intervalsTA, showCircle, showRays, showLabels, circleSize, labelSize];
+const inputs = [periodInput, intervalsTA, showCircle, showRays, showLabels, circleSize, labelSize, labelDistance];
 inputs.forEach(el => el.addEventListener('input', draw));
 
 window.addEventListener('resize', draw);

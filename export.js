@@ -10,6 +10,7 @@ function getExportDom() {
     exportJpgBtn: document.getElementById('exportJpgBtn'),
     circleSize: document.getElementById('circleSize'),
     labelSize: document.getElementById('labelSize'),
+  labelDistance: document.getElementById('labelDistance'),
     showLabels: document.getElementById('showLabels'),
     showCircle: document.getElementById('showCircle'),
     showRays: document.getElementById('showRays'),
@@ -30,7 +31,7 @@ function calculateExportDimensions() {
   console.log('=== Calculating Export Dimensions ===');
   
   // Get current settings
-  const { svg, circleSize, labelSize, showLabels, showCircle, showRays } = getExportDom();
+  const { svg, circleSize, labelSize, labelDistance, showLabels, showCircle, showRays } = getExportDom();
   const circleSizeValue = parseFloat(circleSize.value);
   const labelSizeValue = parseInt(labelSize.value);
   const showLabelsEnabled = showLabels.checked;
@@ -66,8 +67,8 @@ function calculateExportDimensions() {
   });
   
   // Calculate the space needed for labels
-  const labelDistance = showLabelsEnabled ? 35 : 0;
-  const totalRadius = actualRadius + labelDistance;
+  const labelDistValue = showLabelsEnabled ? parseFloat(labelDistance?.value || 35) : 0;
+  const totalRadius = actualRadius + labelDistValue;
   
   // Add some padding around everything
   const exportPadding = 30;
@@ -75,7 +76,7 @@ function calculateExportDimensions() {
   const finalSize = Math.max(300, Math.ceil(requiredDimension)); // Minimum 300px
   
   console.log('Final size calculation:', {
-    labelDistance,
+  labelDistance: labelDistValue,
     totalRadius,
     exportPadding,
     requiredDimension,
@@ -114,7 +115,7 @@ function createExportSVG() {
   exportSvg.appendChild(background);
   
   // Get period data
-  const { periodInput, intervalsTA, showCircle, showLabels, showRays, labelSize } = getExportDom();
+  const { periodInput, intervalsTA, showCircle, showLabels, showRays, labelSize, labelDistance } = getExportDom();
   const periodCents = parsePeriodToCents(periodInput.value);
   if (!isFinite(periodCents) || periodCents === 0) {
     console.warn('Invalid period:', periodCents);
@@ -209,16 +210,17 @@ function createExportSVG() {
     // Label
     if (showLabels.checked) {
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      const labelCircleRadius = dimensions.radius + 35;
+  const labelCircleRadius = dimensions.radius + parseFloat(labelDistance?.value || 35);
       const rad = (d.deg - 90) * Math.PI / 180;
       const lx = dimensions.centerX + Math.cos(rad) * labelCircleRadius;
       const ly = dimensions.centerY + Math.sin(rad) * labelCircleRadius;
-      label.setAttribute('x', lx);
-      label.setAttribute('y', ly);
-      label.setAttribute('fill', 'black');
+  label.setAttribute('x', lx);
+  label.setAttribute('y', ly);
+  label.setAttribute('fill', 'black');
   label.setAttribute('font-size', labelSize.value);
-      label.setAttribute('dominant-baseline', 'middle');
-      label.setAttribute('text-anchor', 'middle');
+  // Center the label on the label radius so its midpoint lies on the radial line
+  label.setAttribute('dominant-baseline', 'middle');
+  label.setAttribute('text-anchor', 'middle');
       label.textContent = d.raw;
       g.appendChild(label);
     }
