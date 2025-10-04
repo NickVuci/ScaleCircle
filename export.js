@@ -1,11 +1,13 @@
 // Export functionality for pitch-class circle
 
-// Small utilities
-const NS = 'http://www.w3.org/2000/svg';
-const DEBUG = false; // set true to see logs
+// Debug flag - set to true to enable detailed logging
+const DEBUG = false;
 const log = (...args) => { if (DEBUG) console.log('[export]', ...args); };
 
-// Get DOM elements used by export
+/**
+ * Get all DOM elements used by export functionality
+ * @returns {Object} Object containing references to all required DOM elements
+ */
 function getExportDom() {
   return {
     svg: document.getElementById('svg'),
@@ -24,66 +26,42 @@ function getExportDom() {
   };
 }
 
-// Filename helper
+/**
+ * Get filename with extension for export
+ * @param {string} extension - File extension (svg, png, jpg)
+ * @returns {string} Filename with extension
+ */
 function getFilename(extension) {
   const { exportFilename } = getExportDom();
   const name = (exportFilename && exportFilename.value.trim()) || 'pitch-class-circle';
   return `${name}.${extension}`;
 }
 
-// Dimension calculation mirrors live rendering (square export)
+/**
+ * Calculate square dimensions for export (fits circle + labels + padding)
+ * @returns {{size: number, radius: number, cx: number, cy: number}}
+ */
 function calculateExportDimensions() {
   const { svg, circleSize, labelDistance, showLabels } = getExportDom();
   const circleSizeValue = parseFloat(circleSize.value);
+  
   const container = svg.parentElement;
   const rect = container.getBoundingClientRect();
-  const W = Math.max(rect.width, 400);
-  const H = Math.max(rect.height, 400);
+  const dims = calculateDimensions(rect, circleSizeValue);
 
-  const padding = 60;
-  const maxRadius = Math.min(W, H) / 2 - padding;
-  const baseRadius = Math.max(20, maxRadius);
-  const radius = baseRadius * circleSizeValue;
+  const labelDist = showLabels.checked ? parseFloat(labelDistance?.value || DEFAULTS.LABEL_DISTANCE) : 0;
+  const totalRadius = dims.radius + labelDist;
+  const size = Math.max(DEFAULTS.EXPORT_MIN_SIZE, Math.ceil((totalRadius + DEFAULTS.EXPORT_PADDING) * 2));
 
-  const labelDist = showLabels.checked ? parseFloat(labelDistance?.value || 35) : 0;
-  const totalRadius = radius + labelDist;
-
-  const exportPadding = 30;
-  const size = Math.max(300, Math.ceil((totalRadius + exportPadding) * 2));
-
-  log('dimensions', { W, H, radius, labelDist, size });
-  return { size, radius, cx: size / 2, cy: size / 2 };
+  log('export dimensions', { size, radius: dims.radius, labelDist });
+  return { size, radius: dims.radius, cx: size / 2, cy: size / 2 };
 }
 
-// Normalize the period label: keep ratios; strip cent symbols otherwise
-function normalizePeriodLabel(inputValue, periodCents) {
-  const s = String(inputValue || '').trim();
-  if (!s) return `${periodCents.toFixed(0)}`;
-  if (s.includes('/')) return s;
-  if (/^-?\d+(?:\.\d+)?(?:c|¢)?$/i.test(s)) return s.replace(/[c¢]/ig, '').trim();
-  return `${periodCents.toFixed(0)}`;
-}
 
-// Build items: period at top + intervals positioned by period
-function buildItems(periodInput, intervalsTA, cx, cy, radius, periodCents) {
-  const items = [];
-  const periodRaw = normalizePeriodLabel(periodInput.value, periodCents);
-  items.push({ cents: 0, raw: periodRaw, type: 'period', deg: 0, x: cx, y: cy - radius });
-
-  const lines = intervalsTA.value.split(/\r?\n/);
-  for (const line of lines) {
-    const it = parseCentsOrRatioToCents(line);
-    if (!it) continue;
-    const deg = ((it.cents / periodCents) * 360) % 360;
-    const rad = (deg - 90) * Math.PI / 180;
-    const x = cx + Math.cos(rad) * radius;
-    const y = cy + Math.sin(rad) * radius;
-    items.push({ ...it, deg, x, y });
-  }
-  return items;
-}
-
-// Create the export SVG mirroring the live style
+/**
+ * Create SVG element for export with all diagram elements
+ * @returns {SVGElement} Complete SVG ready for export
+ */
 function createExportSVG() {
   const dims = calculateExportDimensions();
   const { periodInput, intervalsTA, showCircle, showLabels, showRays, labelSize, labelDistance } = getExportDom();
@@ -91,98 +69,102 @@ function createExportSVG() {
   const periodCents = parsePeriodToCents(periodInput.value);
   if (!isFinite(periodCents) || periodCents === 0) {
     log('invalid period', periodCents);
-    // Still return an empty white square SVG so export works gracefully
-    const empty = document.createElementNS(NS, 'svg');
-    empty.setAttribute('width', dims.size);
-    empty.setAttribute('height', dims.size);
-    empty.setAttribute('viewBox', `0 0 ${dims.size} ${dims.size}`);
-    const bg = document.createElementNS(NS, 'rect');
-    bg.setAttribute('x', 0); bg.setAttribute('y', 0);
-    bg.setAttribute('width', dims.size); bg.setAttribute('height', dims.size);
-    bg.setAttribute('fill', 'white');
+    // Return empty white square SVG for graceful degradation
+    const empty = createSVGElement('svg', { width: dims.size, height: dims.size, viewBox: `0 0 ${dims.size} ${dims.size}` });
+    const bg = createSVGElement('rect', { x: 0, y: 0, width: dims.size, height: dims.size, fill: 'white' });
     empty.appendChild(bg);
     return empty;
   }
 
-  const svg = document.createElementNS(NS, 'svg');
-  svg.setAttribute('width', dims.size);
-  svg.setAttribute('height', dims.size);
-  svg.setAttribute('viewBox', `0 0 ${dims.size} ${dims.size}`);
-  svg.setAttribute('xmlns', NS);
+  const svg = createSVGElement('svg', {
+    width: dims.size,
+    height: dims.size,
+    viewBox: `0 0 ${dims.size} ${dims.size}`,
+    xmlns: SVG_NS
+  });
 
   // Background
-  const bg = document.createElementNS(NS, 'rect');
-  bg.setAttribute('x', 0); bg.setAttribute('y', 0);
-  bg.setAttribute('width', dims.size); bg.setAttribute('height', dims.size);
-  bg.setAttribute('fill', 'white');
+  const bg = createSVGElement('rect', { x: 0, y: 0, width: dims.size, height: dims.size, fill: 'white' });
   svg.appendChild(bg);
 
   // Circle guide
   if (showCircle.checked) {
-    const circle = document.createElementNS(NS, 'circle');
-    circle.setAttribute('cx', dims.cx);
-    circle.setAttribute('cy', dims.cy);
-    circle.setAttribute('r', dims.radius);
-    circle.setAttribute('fill', 'none');
-    circle.setAttribute('stroke', 'black');
-    circle.setAttribute('stroke-width', '1');
+    const circle = createSVGElement('circle', {
+      cx: dims.cx,
+      cy: dims.cy,
+      r: dims.radius,
+      fill: 'none',
+      stroke: 'black',
+      'stroke-width': 1
+    });
     svg.appendChild(circle);
   }
 
-  const items = buildItems(periodInput, intervalsTA, dims.cx, dims.cy, dims.radius, periodCents);
+  // Build items
+  const items = buildItems(periodInput.value, intervalsTA.value, dims.cx, dims.cy, dims.radius, periodCents);
+  log('items', items.length);
 
   // Rays
   if (showRays.checked) {
-    for (const d of items) {
-      const a = (d.deg - 90) * Math.PI / 180;
-      const x2 = dims.cx + Math.cos(a) * dims.radius;
-      const y2 = dims.cy + Math.sin(a) * dims.radius;
-      const ray = document.createElementNS(NS, 'line');
-      ray.setAttribute('x1', dims.cx);
-      ray.setAttribute('y1', dims.cy);
-      ray.setAttribute('x2', x2);
-      ray.setAttribute('y2', y2);
-      ray.setAttribute('stroke', 'black');
-      ray.setAttribute('stroke-width', '1');
+    for (const item of items) {
+      const angle = (item.deg - 90) * Math.PI / 180;
+      const x2 = dims.cx + Math.cos(angle) * dims.radius;
+      const y2 = dims.cy + Math.sin(angle) * dims.radius;
+      const ray = createSVGElement('line', {
+        x1: dims.cx,
+        y1: dims.cy,
+        x2,
+        y2,
+        stroke: 'black',
+        'stroke-width': 1
+      });
       svg.appendChild(ray);
     }
   }
 
   // Points and labels
-  for (const d of items) {
-    const g = document.createElementNS(NS, 'g');
+  const labelDist = parseFloat(labelDistance?.value || DEFAULTS.LABEL_DISTANCE);
+  const labelRadius = dims.radius + labelDist;
+  
+  for (const item of items) {
+    const g = createSVGElement('g');
 
-    const pt = document.createElementNS(NS, 'circle');
-    pt.setAttribute('cx', d.x);
-    pt.setAttribute('cy', d.y);
-    pt.setAttribute('r', 5.2);
-    pt.setAttribute('fill', 'black');
-    pt.setAttribute('stroke', 'none');
+    const pt = createSVGElement('circle', {
+      cx: item.x,
+      cy: item.y,
+      r: DEFAULTS.POINT_RADIUS,
+      fill: 'black',
+      stroke: 'none'
+    });
     g.appendChild(pt);
 
     if (showLabels.checked) {
-      const label = document.createElementNS(NS, 'text');
-      const labelCircleRadius = dims.radius + parseFloat(labelDistance?.value || 35);
-      const rad = (d.deg - 90) * Math.PI / 180;
-      const lx = dims.cx + Math.cos(rad) * labelCircleRadius;
-      const ly = dims.cy + Math.sin(rad) * labelCircleRadius;
-      label.setAttribute('x', lx);
-      label.setAttribute('y', ly);
-      label.setAttribute('fill', 'black');
-      label.setAttribute('font-size', labelSize.value);
-      label.setAttribute('dominant-baseline', 'middle');
-      label.setAttribute('text-anchor', 'middle');
-      label.textContent = d.raw;
+      const angle = (item.deg - 90) * Math.PI / 180;
+      const lx = dims.cx + Math.cos(angle) * labelRadius;
+      const ly = dims.cy + Math.sin(angle) * labelRadius;
+      
+      const label = createSVGElement('text', {
+        x: lx,
+        y: ly,
+        fill: 'black',
+        'font-size': labelSize.value,
+        'dominant-baseline': 'middle',
+        'text-anchor': 'middle'
+      });
+      label.textContent = item.raw;
       g.appendChild(label);
     }
 
     svg.appendChild(g);
   }
 
+  log('final export size', dims.size + 'x' + dims.size);
   return svg;
 }
 
-// Export as SVG
+/**
+ * Handle SVG export - creates and downloads SVG file
+ */
 function handleSvgExport() {
   const exportSvg = createExportSVG();
   const serializer = new XMLSerializer();
@@ -198,7 +180,10 @@ function handleSvgExport() {
   setTimeout(() => URL.revokeObjectURL(url), 500);
 }
 
-// Export as raster image (PNG/JPG)
+/**
+ * Handle raster image export (PNG or JPG)
+ * @param {string} format - Export format ('png' or 'jpg')
+ */
 function handleRasterExport(format) {
   const exportSvg = createExportSVG();
   const serializer = new XMLSerializer();
@@ -210,16 +195,16 @@ function handleRasterExport(format) {
   const ctx = canvas.getContext('2d');
   const img = new Image();
 
-  const scale = 2; // high DPI
-  canvas.width = squareSize * scale;
-  canvas.height = squareSize * scale;
+  canvas.width = squareSize * DEFAULTS.EXPORT_SCALE;
+  canvas.height = squareSize * DEFAULTS.EXPORT_SCALE;
+  log('canvas', canvas.width + 'x' + canvas.height);
 
   img.onload = function () {
     if (format === 'jpg') {
       ctx.fillStyle = 'white';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-    ctx.scale(scale, scale);
+    ctx.scale(DEFAULTS.EXPORT_SCALE, DEFAULTS.EXPORT_SCALE);
     ctx.drawImage(img, 0, 0, squareSize, squareSize);
 
     const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
@@ -232,6 +217,7 @@ function handleRasterExport(format) {
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 500);
+      log(format.toUpperCase() + ' export complete');
     }, mimeType, 0.95);
   };
 
@@ -244,7 +230,9 @@ function handleRasterExport(format) {
   img.src = svgUrl;
 }
 
-// Wire up export buttons after DOM is ready
+/**
+ * Wire up export button event listeners after DOM is ready
+ */
 window.addEventListener('DOMContentLoaded', () => {
   const { exportSvgBtn, exportPngBtn, exportJpgBtn } = getExportDom();
   if (exportSvgBtn) exportSvgBtn.addEventListener('click', handleSvgExport);
