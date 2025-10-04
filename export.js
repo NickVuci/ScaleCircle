@@ -145,13 +145,14 @@ function createExportSVG() {
   const periodInputValue = periodInput.value.trim();
   let periodDisplayValue;
   if (periodInputValue.includes('/')) {
+    // Ratio input: keep as-is
     periodDisplayValue = periodInputValue;
   } else if (/^-?\d+(?:\.\d+)?(?:c|¢)?$/i.test(periodInputValue)) {
-    periodDisplayValue = periodInputValue.includes('c') || periodInputValue.includes('¢') 
-      ? periodInputValue 
-      : `${periodInputValue}¢`;
+    // Cents input: strip cent sign, show number only
+    periodDisplayValue = periodInputValue.replace(/[c¢]/ig, '').trim();
   } else {
-    periodDisplayValue = `${periodCents.toFixed(0)}¢`;
+    // Fallback: computed cents as number only
+    periodDisplayValue = `${periodCents.toFixed(0)}`;
   }
   
   items.push({

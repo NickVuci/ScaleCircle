@@ -117,21 +117,19 @@ function draw() {
   const lines = intervalsTA.value.split(/\r?\n/);
   const items = [];
   
-  // Determine the original format of the period input
+  // Determine the display for the period label
   const periodInputValue = periodInput.value.trim();
   let periodDisplayValue;
   
-  // Check if period was entered as a ratio
+  // If input looks like a ratio with '/', keep as-is
   if (periodInputValue.includes('/')) {
-    periodDisplayValue = periodInputValue; // Keep the ratio format
+    periodDisplayValue = periodInputValue;
   } else if (/^-?\d+(?:\.\d+)?(?:c|¢)?$/i.test(periodInputValue)) {
-    // Period was entered as cents, preserve the format
-    periodDisplayValue = periodInputValue.includes('c') || periodInputValue.includes('¢') 
-      ? periodInputValue 
-      : `${periodInputValue}¢`;
+    // If period is a cent value, show the number only (strip c/¢)
+    periodDisplayValue = periodInputValue.replace(/[c¢]/ig, '').trim();
   } else {
-    // Fallback to cents if format is unclear
-    periodDisplayValue = `${periodCents.toFixed(0)}¢`;
+    // Fallback: use computed cents (number only, no cent sign)
+    periodDisplayValue = `${periodCents.toFixed(0)}`;
   }
   
   // Add the period as the first item (at 0 degrees)
