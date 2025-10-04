@@ -1,4 +1,4 @@
-# Pitch-Class Circle Application
+# Scale Circle Image Generator
 
 A clean, interactive web application for visualizing musical intervals on a circular diagram, with support for both cent values and frequency ratios.
 
@@ -65,5 +65,7 @@ Works in all modern browsers supporting:
 Open source. Feel free to use and modify.
 
 ## Credits
-
+Nick Vuci 2025
 Created for visualizing microtonal scales and xenharmonic intervals.
+
+Nikc
