@@ -121,8 +121,29 @@ function draw() {
   clearSVG();
   
   // Calculate dimensions
-  const container = svg.parentElement;
-  const containerRect = container.getBoundingClientRect();
+  const container = svg.parentElement; // .svg-wrap
+  const panel = container?.parentElement; // .canvas-panel content area
+  const panelRect = panel.getBoundingClientRect();
+
+  // Determine square size: fit within panel's available width and height (minus header of panel)
+  // canvas-panel layout: h2 then .svg-wrap; we already measured panel's content box
+  const headerEl = panel.querySelector('h2');
+  const headerH = headerEl ? headerEl.getBoundingClientRect().height : 0;
+  // Account for panel padding: .panel .content wraps others, but canvas-panel has no inner content div for svg.
+  // Compute available height for svg-wrap inside the panel box minus header and borders/paddings from CSS.
+  const style = getComputedStyle(panel);
+  const padTop = parseFloat(style.paddingTop || '0');
+  const padBottom = parseFloat(style.paddingBottom || '0');
+  const availableH = Math.max(0, panelRect.height - headerH - padTop - padBottom - 18); // small fudge for borders
+  const availableW = panelRect.width;
+  const squareSize = Math.max(DEFAULTS.MIN_DIMENSION, Math.floor(Math.min(availableW, availableH)));
+
+  // Set the wrapper to a square
+  container.style.width = `${squareSize}px`;
+  container.style.height = `${squareSize}px`;
+
+  // Now compute internal drawing dimensions based on that square
+  const containerRect = { width: squareSize, height: squareSize };
   const dims = calculateDimensions(containerRect, parseFloat(circleSize.value));
   
   // Set SVG dimensions to prevent layout shifts
